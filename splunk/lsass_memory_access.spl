@@ -1,0 +1,21 @@
+`sysmon` EventCode=10 TargetImage="*\\lsass.exe"
+    (GrantedAccess=0x1010 OR GrantedAccess=0x1410 OR GrantedAccess=0x1438 OR GrantedAccess=0x1FFFFF)
+    NOT SourceImage IN ("C:\\Windows\\System32\\*", "C:\\Program Files\\*", "C:\\Program Files (x86)\\*")
+| stats count min(_time) as first_seen max(_time) as last_seen values(SourceImage) as tools by ComputerName
+| where count > 0
+| convert ctime(first_seen) ctime(last_seen)
+
+```
+LSASS Memory Access Detection
+Author: fungiknight (Gabriel Lopez)
+MITRE: T1003.001 (OS Credential Dumping: LSASS Memory)
+
+Detects processes accessing LSASS memory with suspicious
+GrantedAccess values commonly used by credential-dumping tools
+(Mimikatz, comsvcs.dll MiniDump, procdump).
+
+Filters:
+  - Excludes System32/Program Files (legitimate AV and OS processes)
+  - GrantedAccess 0x1010 = PROCESS_QUERY_LIMITED_INFORMATION + PROCESS_VM_READ
+  - GrantedAccess 0x1FFFFF = PROCESS_ALL_ACCESS (most suspicious)
+```

@@ -1,0 +1,13 @@
+source="WinEventLog:Microsoft-Windows-Windows Defender/Operational" EventCode=5001
+| stats count min(_time) as first_seen max(_time) as last_seen by host
+| convert ctime(first_seen) ctime(last_seen)
+
+```
+Windows Defender Real-Time Protection Disabled
+Author: fungiknight (Gabriel Lopez)
+MITRE: T1562.001 (Impair Defenses: Disable or Modify Tools)
+
+Event ID 5001 fires when real-time protection is disabled.
+Attackers frequently disable Defender as an early
+post-compromise action.
+```

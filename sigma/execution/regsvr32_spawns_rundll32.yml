@@ -1,0 +1,34 @@
+title: Regsvr32 Spawning Rundll32
+id: 1a2b3c4d-5e6f-7a8b-9c0d-1e2f3a4b5c6d
+status: test
+description: |
+    Detects regsvr32.exe spawning rundll32.exe as a child process.
+    This is a high-fidelity detection for Emotet and similar malware
+    that registers a malicious DLL via regsvr32, which then spawns
+    rundll32 to execute the payload.
+author: fungiknight (Gabriel Lopez)
+date: 2026/08/18
+references:
+    - https://attack.mitre.org/techniques/T1218/010/
+    - https://attack.mitre.org/techniques/T1218/011/
+tags:
+    - attack.execution
+    - attack.defense_evasion
+    - attack.t1218.010
+    - attack.t1218.011
+logsource:
+    category: process_creation
+    product: windows
+detection:
+    selection:
+        ParentImage|endswith: '\regsvr32.exe'
+        Image|endswith: '\rundll32.exe'
+    condition: selection
+falsepositives:
+    - Legitimate COM registration operations (rare for this specific parent-child chain)
+level: high
+# --- Testing Notes ---
+# Emotet execution chain observed:
+#   regsvr32.exe /s invoice_2026_08.dll
+#     └── rundll32.exe (spawned child)
+#           └── cmd.exe /c timeout 5 && del /f /q "[original DLL]"

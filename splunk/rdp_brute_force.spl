@@ -1,0 +1,19 @@
+source="WinEventLog:Security" EventCode=4625 LogonType=10
+| stats count dc(TargetUserName) as unique_users min(_time) as first_seen max(_time) as last_seen by IpAddress
+| where count > 5
+| sort -count
+| convert ctime(first_seen) ctime(last_seen)
+
+```
+RDP Brute Force Detection
+Author: fungiknight (Gabriel Lopez)
+MITRE: T1110.001 (Brute Force: Password Guessing)
+
+Aggregates failed RDP logon attempts (Event 4625,
+LogonType 10 = RemoteInteractive) by source IP.
+
+Companion query — successful logons after failures:
+    source="WinEventLog:Security" EventCode=4624 LogonType=10
+    | stats count by IpAddress, TargetUserName
+    Cross-reference with 4625 results to identify compromises.
+```

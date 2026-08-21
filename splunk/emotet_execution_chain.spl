@@ -1,0 +1,13 @@
+`sysmon` EventCode=1 ParentImage="*\\regsvr32.exe" Image="*\\rundll32.exe"
+| stats count min(_time) as first_seen max(_time) as last_seen by ComputerName, Image, ParentImage, CommandLine
+| convert ctime(first_seen) ctime(last_seen)
+
+```
+Emotet Execution Chain: regsvr32 Spawning rundll32
+Author: fungiknight (Gabriel Lopez)
+MITRE: T1218.010, T1218.011
+
+Emotet DLLs are registered via regsvr32 which then spawns
+rundll32 to load the payload. This parent-child relationship
+is unusual in legitimate software.
+```

@@ -1,0 +1,14 @@
+`sysmon` EventCode=3 Image="*\\rundll32.exe" Initiated=true
+    (DestinationPort=80 OR DestinationPort=443 OR DestinationPort=8080 OR DestinationPort=8443)
+| stats count min(_time) as first_seen max(_time) as last_seen values(DestinationIp) as dest_ips values(DestinationPort) as dest_ports by ComputerName, Image
+| convert ctime(first_seen) ctime(last_seen)
+
+```
+Rundll32 Outbound HTTP Connection
+Author: fungiknight (Gabriel Lopez)
+MITRE: T1071.001 (Application Layer Protocol: Web)
+
+Rundll32 should rarely make outbound HTTP connections.
+Emotet uses rundll32 to load its DLL payload, which then
+beacons to hardcoded C2 IPs over HTTP.
+```

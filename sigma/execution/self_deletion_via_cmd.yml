@@ -1,0 +1,36 @@
+title: Self-Deletion via CMD Timeout and Del
+id: 7c8d9e0f-1a2b-3c4d-5e6f-7a8b9c0d1e2f
+status: test
+description: |
+    Detects a process spawning cmd.exe with a command line containing
+    both 'timeout' and 'del /f /q'. This is a common anti-forensics
+    technique used by Emotet and other malware to delete the original
+    payload after execution, leaving no file artifact on disk.
+author: fungiknight (Gabriel Lopez)
+date: 2026/08/18
+references:
+    - https://attack.mitre.org/techniques/T1070/004/
+tags:
+    - attack.defense_evasion
+    - attack.t1070.004
+logsource:
+    category: process_creation
+    product: windows
+detection:
+    selection:
+        Image|endswith: '\cmd.exe'
+        CommandLine|contains|all:
+            - 'timeout'
+            - 'del /f /q'
+    filter_parent:
+        ParentImage|endswith: '\rundll32.exe'
+    condition: selection
+falsepositives:
+    - Legitimate software uninstallers using delayed deletion (uncommon with this exact pattern)
+level: high
+# --- Testing Notes ---
+# Observed Emotet behavior:
+#   cmd.exe /c timeout 5 && del /f /q "C:\Users\...\invoice_2026_08.dll"
+#   Parent: rundll32.exe
+#   The 5-second delay allows the parent process to release the file handle
+#   before deletion.

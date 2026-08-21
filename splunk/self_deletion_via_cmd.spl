@@ -1,0 +1,13 @@
+`sysmon` EventCode=1 Image="*\\cmd.exe" CommandLine="*timeout*" CommandLine="*del /f /q*"
+| stats count min(_time) as first_seen max(_time) as last_seen by ComputerName, ParentImage, CommandLine
+| convert ctime(first_seen) ctime(last_seen)
+
+```
+Self-Deletion via CMD Timeout and Del
+Author: fungiknight (Gabriel Lopez)
+MITRE: T1070.004 (Indicator Removal: File Deletion)
+
+Malware delays then force-deletes its own binary to avoid
+forensic recovery. The timeout allows the parent process
+to release the file handle before deletion.
+```

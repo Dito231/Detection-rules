@@ -1,0 +1,15 @@
+`sysmon` EventCode=1
+    (OriginalFileName="Apollo.exe"
+     OR Hashes="*CEE7A80C476719D605855773227E6D102692DFBBB34D2110011A6B78BFCAC21A*")
+| stats count min(_time) as first_seen max(_time) as last_seen by ComputerName, Image, OriginalFileName, ParentImage, CommandLine, User
+| convert ctime(first_seen) ctime(last_seen)
+
+```
+Mythic Apollo Agent Detection
+Author: fungiknight (Gabriel Lopez)
+MITRE: T1071.001 (Application Layer Protocol: Web)
+
+Detects execution of the Mythic C2 Apollo agent by
+OriginalFileName or SHA256 hash. The OriginalFileName
+field persists in the PE header even after renaming.
+```

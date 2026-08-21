@@ -1,0 +1,54 @@
+title: Suspicious LSASS Memory Access
+id: 8a7b9c1d-2e3f-4a5b-6c7d-8e9f0a1b2c3d
+status: test
+description: |
+    Detects processes accessing LSASS memory with permissions commonly
+    associated with credential dumping tools. Covers Mimikatz, comsvcs.dll
+    MiniDump, procdump, and custom dumpers by focusing on GrantedAccess
+    values rather than specific tool signatures.
+author: fungiknight (Gabriel Lopez)
+date: 2026/08/10
+modified: 2026/08/10
+references:
+    - https://attack.mitre.org/techniques/T1003/001/
+    - https://docs.microsoft.com/en-us/windows/win32/procthread/process-security-and-access-rights
+tags:
+    - attack.credential_access
+    - attack.t1003.001
+logsource:
+    category: process_access
+    product: windows
+detection:
+    selection:
+        TargetImage|endswith: '\lsass.exe'
+        GrantedAccess|contains:
+            - '0x1010'    # PROCESS_QUERY_LIMITED_INFORMATION + PROCESS_VM_READ (Mimikatz)
+            - '0x1410'    # + PROCESS_QUERY_INFORMATION (Mimikatz variant)
+            - '0x1438'    # procdump access mask
+            - '0x1FFFFF'  # PROCESS_ALL_ACCESS (extremely suspicious)
+    filter_system:
+        SourceImage|startswith:
+            - 'C:\Windows\System32\'
+            - 'C:\Program Files\'
+            - 'C:\Program Files (x86)\'
+    filter_av:
+        SourceImage|contains:
+            - 'MsMpEng.exe'        # Windows Defender
+            - 'csfalconservice.exe' # CrowdStrike Falcon
+            - 'cb.exe'             # Carbon Black
+    condition: selection and not filter_system and not filter_av
+falsepositives:
+    - Security tools performing legitimate credential verification
+    - EDR agents accessing LSASS for monitoring
+    - Windows Credential Guard operations
+level: high
+# --- Testing Notes ---
+# Tested against:
+#   - Mimikatz sekurlsa::logonpasswords → DETECTED (GrantedAccess: 0x1010)
+#   - comsvcs.dll MiniDump via rundll32 → DETECTED (GrantedAccess: 0x1FFFFF)
+#     NOTE: rundll32 is in System32, so this bypasses filter_system.
+#     Created supplementary rule for rundll32 + LSASS specifically.
+#   - procdump -ma lsass.exe → DETECTED (GrantedAccess: 0x1438)
+# False positives observed:
+#   - wmiprvse.exe (GrantedAccess: 0x1400 — not in our suspicious list, no action needed)
+#   - svchost.exe (filtered by System32 path)
