@@ -79,8 +79,8 @@ Rules that haven't been tested against real tool execution are not included. If 
 
 ## Related
 
-- [MyDFIR 30-Day Challenge Writeup](https://fungiknight.neocities.org/blog/mydfir-part1-soc-lab.html) — the lab environment where these rules were developed
-- [Malware Analysis Lab Build](https://fungiknight.neocities.org/blog/lab-build.html) — the FlareVM + REMnux setup used for testing
+- [MyDFIR 30-Day Challenge Writeup] (https://dito-portfolio.neocities.org/blog/mydfir-part1-soc-lab) — the lab environment where these rules were developed
+- [Malware Analysis Lab Build](https://dito-portfolio.neocities.org/blog/lab-build) — the FlareVM + REMnux setup used for testing
 
 ## License
 
